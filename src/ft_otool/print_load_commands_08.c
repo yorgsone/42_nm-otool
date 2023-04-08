@@ -12,6 +12,7 @@
 
 #include "../../inc/loading_command_name.h"
 
+#if __MACH__
 void		print_rpath_command(void *com, const t_lc *info, uint8_t big_endian)
 {
 	void		*ptr;
@@ -20,7 +21,7 @@ void		print_rpath_command(void *com, const t_lc *info, uint8_t big_endian)
 	ptr = com;
 	offset = swap32(big_endian, ((struct rpath_command*)ptr)->path.offset);
 	ft_printf("% 9s %s\n", "cmd", info->cmd_name);
-	ft_printf("% 9s %"PRIu32"\n", "cmdside",\
+	ft_printf("% 9s %"PRIu32"\n", "cmdsize",\
 	swap32(big_endian, ((struct rpath_command*)ptr)->cmdsize));
 	ft_printf("% 9s %s (offset %"PRIu32")\n", "path", ptr + offset, offset);
 }
@@ -32,7 +33,7 @@ const t_lc *info, uint8_t big_endian)
 
 	ptr = com;
 	ft_printf("% 9s %s\n", "cmd", info->cmd_name);
-	ft_printf("% 9s %"PRIu32"\n", "cmdside",\
+	ft_printf("% 9s %"PRIu32"\n", "cmdsize",\
 	swap32(big_endian, ((struct linkedit_data_command*)ptr)->cmdsize));
 	ft_printf("% 9s %"PRIu32"\n", "dataoff",\
 	swap32(big_endian, ((struct linkedit_data_command*)ptr)->dataoff));
@@ -47,7 +48,7 @@ const t_lc *info, uint8_t big_endian)
 
 	ptr = com;
 	ft_printf("% 9s %s\n", "cmd", info->cmd_name);
-	ft_printf("% 9s %"PRIu32"\n", "cmdside",\
+	ft_printf("% 9s %"PRIu32"\n", "cmdsize",\
 	swap32(big_endian, ((struct encryption_info_command*)ptr)->cmdsize));
 	ft_printf("% 9s %"PRIu32"\n", "cryptoff",\
 	swap32(big_endian, ((struct encryption_info_command*)ptr)->cryptoff));
@@ -80,7 +81,7 @@ const t_lc *info, uint8_t big_endian)
 
 	ptr = com;
 	ft_printf("% 15s %s\n", "cmd", info->cmd_name);
-	ft_printf("% 15s %"PRIu32"\n", "cmdside",\
+	ft_printf("% 15s %"PRIu32"\n", "cmdsize",\
 	swap32(big_endian, ((struct dyld_info_command*)ptr)->cmdsize));
 	ft_printf("% 15s %"PRIu32"\n", "rebase_off",\
 	swap32(big_endian, ((struct dyld_info_command*)ptr)->rebase_off));
@@ -92,3 +93,4 @@ const t_lc *info, uint8_t big_endian)
 	swap32(big_endian, ((struct dyld_info_command*)ptr)->bind_size));
 	print_dyld_info_command_2(ptr, big_endian);
 }
+#endif

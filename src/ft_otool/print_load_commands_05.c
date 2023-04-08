@@ -12,6 +12,7 @@
 
 #include "../../inc/loading_command_name.h"
 
+#if __MACH__
 static void	print_time(uint32_t timestamp)
 {
 	time_t		t;
@@ -53,7 +54,7 @@ void		print_dylib_command(void *com, const t_lc *info, uint8_t big_endian)
 
 	ptr = com;
 	ft_printf("% 13s %s\n", "cmd", info->cmd_name);
-	ft_printf("% 13s %"PRIu32"\n", "cmdside",\
+	ft_printf("% 13s %"PRIu32"\n", "cmdsize",\
 	swap32(big_endian, ((struct dylib_command*)ptr)->cmdsize));
 	print_dylib_struct(ptr, big_endian);
 }
@@ -67,7 +68,8 @@ void		print_dylinker_command(void *com, const t_lc *info,
 	ptr = com;
 	offset = swap32(big_endian, ((struct dylinker_command*)ptr)->name.offset);
 	ft_printf("% 13s %s\n", "cmd", info->cmd_name);
-	ft_printf("% 13s %"PRIu32"\n", "cmdside",\
+	ft_printf("% 13s %"PRIu32"\n", "cmdsize",\
 	swap32(big_endian, ((struct dylinker_command*)ptr)->cmdsize));
 	ft_printf("% 13s %s (offset %"PRIu32")\n", "name", ptr + offset, offset);
 }
+#endif

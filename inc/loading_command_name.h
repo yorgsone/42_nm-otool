@@ -89,6 +89,7 @@ void			print_linker_option_command(void *com, const t_lc *info,
 void			print_build_version_command(void *com, const t_lc *info,
 				uint8_t is_big_endian);
 
+#if __MACH__
 static const t_lc g_loading_commands_table[] =
 {
 	{LC_SEGMENT, "LC_SEGMENT", &print_sc},
@@ -155,6 +156,7 @@ static const t_lc g_loading_commands_table[] =
 		&print_version_min_command},
 	{0, NULL, NULL}
 };
+#endif
 
 const t_lc		*g_loading_commands_table_infos();
 const t_lc		*lc_info_from_id(uint32_t id);

@@ -37,9 +37,11 @@ static void	print_ar_header(t_filetype *ar)
 	}
 }
 
+#if __MACH__
 static int	do_options(t_filetype *ar, t_filetype *mach,
 void *macho_header, const char *o_name)
 {
+	mach->flags = ar->flags;
 	mach->start = macho_header;
 	if (is_macho(*(uint32_t *)macho_header, mach))
 	{
@@ -88,6 +90,7 @@ void *ar_hdr, void *m_hdr)
 	return (1);
 }
 
+
 void		handle_ar(t_filetype *ar, uint8_t flags)
 {
 	ar->flags = flags;
@@ -97,5 +100,6 @@ void		handle_ar(t_filetype *ar, uint8_t flags)
 	chk_flag(FLAG_T, flags))
 		if (print_macho_ar(ar, flags, ar->start + SARMAG,\
 		(ar->start + SARMAG) + sizeof(struct ar_hdr)) != 1)
-			error_ret(-2, ar->name, NULL);
+			error_ret(-2, ar->name, NULL, NULL);
 }
+#endif

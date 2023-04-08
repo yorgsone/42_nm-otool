@@ -24,30 +24,33 @@ void	*o_mmap(int fd, off_t *size)
 	return (mmap(NULL, buf.st_size, PROT_READ, MAP_PRIVATE, fd, 0));
 }
 
+#if __MACH__
 int		print_macho_header(t_filetype *mach, void *macho_header)
 {
+	struct mach_header_64	*header_64;
+	struct mach_header		*header_32;
+
 	ft_printf("Mach header\n");
-	ft_printf("% 11s % 7s % 10s % 5s ", "magic", "cputype", "cpusubtype",\
-	"caps");
-	ft_printf("% 11s % 6s % 10s % 10s\n", "filetype", "ncmds", "sizeofcmds",\
-	"flags");
-	ft_printf(" 0x%02x", swap32(mach->big_endian,\
-	((struct mach_header *)macho_header)->magic));
-	ft_printf(" % 7u", swap32(mach->big_endian,\
-	((struct mach_header *)macho_header)->cputype));
-	ft_printf(" % 10u", swap32(mach->big_endian,\
-	((struct mach_header *)macho_header)->cpusubtype));
-	ft_printf("  0x%02x", (swap32(mach->big_endian,\
-	((struct mach_header *)macho_header)->cpusubtype) &\
-	CPU_SUBTYPE_MASK) >> 24);
-	ft_printf(" % 11u", swap32(mach->big_endian,\
-	((struct mach_header *)macho_header)->filetype));
-	ft_printf(" % 6u", swap32(mach->big_endian,\
-	((struct mach_header *)macho_header)->ncmds));
-	ft_printf(" % 10u", swap32(mach->big_endian,\
-	((struct mach_header *)macho_header)->sizeofcmds));
-	ft_printf(" 0x%08x\n", swap32(mach->big_endian,\
-	((struct mach_header *)macho_header)->flags));
+	ft_printf("      magic cputype cpusubtype  caps");
+	ft_printf("    filetype ncmds sizeofcmds      flags\n");
+	if (mach->is_64)
+	{
+		header_64 = macho_header;
+		ft_printf(" 0x%08x %8ld %10ld  0x%02x %11d %5d %10d 0x%08x\n",
+			header_64->magic, header_64->cputype, header_64->cpusubtype &
+			~CPU_SUBTYPE_MASK, (header_64->cpusubtype & CPU_SUBTYPE_MASK)
+			>> 24, header_64->filetype, header_64->ncmds,
+			header_64->sizeofcmds, header_64->flags);
+	}
+	else
+	{
+		header_32 = macho_header;
+		ft_printf(" 0x%08x %8ld %10ld  0x%02x %11d %5d %10d 0x%08x\n",
+			header_32->magic, header_32->cputype, header_32->cpusubtype &
+			~CPU_SUBTYPE_MASK, (header_32->cpusubtype & CPU_SUBTYPE_MASK)
+			>> 24, header_32->filetype, header_32->ncmds,
+			header_32->sizeofcmds, header_32->flags);
+	}
 	return (1);
 }
 
@@ -61,6 +64,7 @@ int		is_text_section(t_filetype *mach, void *sect)
 	return ((ft_strcmp(((t_s*)sect)->segname, "__TEXT") == 0) &&\
 	(ft_strcmp(((t_s*)sect)->sectname, "__text") == 0));
 }
+#endif
 
 void	ft_hexdump_line_values(char *start, int64_t len, t_filetype *file)
 {
@@ -95,7 +99,7 @@ int64_t start_address, t_filetype *file)
 	while (len > 0)
 	{
 		ft_printf("%0*llx%s", (!file->is_64)
-			? 8 : 16, start_address, "\t");
+			? 8 : 16, start_address, " ");
 		ft_hexdump_line_values(start, len, file);
 		ft_printf("\n");
 		start += 16;

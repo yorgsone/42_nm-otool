@@ -12,6 +12,7 @@
 
 #include "../../inc/loading_command_name.h"
 
+#if __MACH__
 const t_lc	*g_loading_commands_table_infos(void)
 {
 	return (g_loading_commands_table);
@@ -30,3 +31,4 @@ const t_lc	*lc_info_from_id(uint32_t id)
 	}
 	return (NULL);
 }
+#endif

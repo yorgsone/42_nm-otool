@@ -12,6 +12,7 @@
 
 #include "../../inc/loading_command_name.h"
 
+#if __MACH__
 void		print_note_command(void *com,
 const t_lc *info, uint8_t big_endian)
 {
@@ -19,7 +20,7 @@ const t_lc *info, uint8_t big_endian)
 
 	ptr = com;
 	ft_printf("% 9s %s\n", "cmd", info->cmd_name);
-	ft_printf("% 9s %"PRIu32"\n", "cmdside",\
+	ft_printf("% 9s %"PRIu32"\n", "cmdsize",\
 	swap32(big_endian, ((struct note_command*)ptr)->cmdsize));
 	ft_printf("% 9s %s\n", "data_owner",\
 	((struct note_command*)ptr)->data_owner);
@@ -36,7 +37,7 @@ const t_lc *info, uint8_t big_endian)
 
 	ptr = com;
 	ft_printf("% 9s %s\n", "cmd", info->cmd_name);
-	ft_printf("% 9s %"PRIu32"\n", "cmdside",\
+	ft_printf("% 9s %"PRIu32"\n", "cmdsize",\
 	swap32(big_endian, ((struct linker_option_command*)ptr)->cmdsize));
 	ft_printf("% 9s %"PRIu32"\n", "count",\
 	swap32(big_endian, ((struct linker_option_command*)ptr)->count));
@@ -44,7 +45,7 @@ const t_lc *info, uint8_t big_endian)
 
 static void	print_build_version_command_2(void *ptr, uint8_t big_endian)
 {
-	ft_printf("% 9s %"PRIu32"\n", "cmdside",\
+	ft_printf("% 9s %"PRIu32"\n", "cmdsize",\
 	swap32(big_endian, ((struct build_version_command*)ptr)->cmdsize));
 	ft_printf("% 9s %"PRIu32"\n", "platform",\
 	swap32(big_endian, ((struct build_version_command*)ptr)->platform));
@@ -77,3 +78,4 @@ const t_lc *info, uint8_t big_endian)
 	ft_printf("% 9s %u.%u.%u\n", "version", (tool_version & 0xFFFF0000) >> 16,\
 	(tool_version & 0x0000FF00) >> 8, (tool_version & 0x000000FF));
 }
+#endif

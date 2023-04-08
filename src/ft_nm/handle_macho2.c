@@ -12,6 +12,7 @@
 
 #include "../../inc/ft_nm.h"
 
+# if __MACH__
 uint32_t	get_count_sects(t_filetype *mach, void *lc)
 {
 	if (swap32(mach->big_endian, ((t_lco *)lc)->cmd) == LC_SEGMENT)
@@ -37,7 +38,7 @@ t_list **my_syms, t_filetype *file)
 	ncmds = swap32(mach->big_endian, ((struct mach_header *)start)->ncmds);
 	while (i < ncmds)
 	{
-		if (check_oflow(file, load_command) ||\
+		if (check_oflow(file, load_command) == 1 ||\
 		check_lc_errors((t_lco*)load_command, mach) == -1)
 			return (-1);
 		if (swap32(mach->big_endian, ((t_lco*)load_command)->cmd) \
@@ -50,6 +51,7 @@ t_list **my_syms, t_filetype *file)
 	}
 	return (1);
 }
+
 
 int			parse_symtab_command(t_filetype *mach, void *load_command,
 t_list **my_syms, t_filetype *file)
@@ -69,18 +71,32 @@ t_list **my_syms, t_filetype *file)
 	}
 	return (1);
 }
+# endif
 
 void		inner_print_sym(int select, int pad_size, t_symtab_syms *sym)
 {
 	if (select == 1)
-		ft_printf("%*s %c %s\n", pad_size, " ",\
-		sym->type, sym->name);
+		(pad_size == 16) ? \
+		ft_printf("                 %c %s\n", sym->type, sym->name) :
+		ft_printf("         %c %s\n", sym->type, sym->name);
 	else if (select == 2)
-		ft_printf("%0*llx %c %s\n",\
-		pad_size, sym->n_value, sym->type, sym->name);
+	{
+		if (sym->type == 'I' || sym->type == 'i')
+			ft_printf("                 %c %s (indirect for %s)\n",\
+			sym->type, sym->name, sym->name);
+		else
+			ft_printf("%0*llx %c %s\n",\
+			pad_size, sym->n_value, sym->type, sym->name);
+	}
 	else
-		ft_printf("%0*x %c %s\n", \
-		pad_size, (uint32_t)sym->n_value, sym->type, sym->name);
+	{
+		if (sym->type == 'I' || sym->type == 'i')
+			ft_printf("         %c %s (indirect for %s)\n",\
+			sym->type, sym->name, sym->name);
+		else
+			ft_printf("%0*x %c %s\n", \
+			pad_size, (uint32_t)sym->n_value, sym->type, sym->name);
+	}
 }
 
 void		print_syms(t_filetype *mach, t_list **syms)

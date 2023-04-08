@@ -12,6 +12,7 @@
 
 #include "../../inc/ft_nm.h"
 
+#if __MACH__
 int		save_syms_64(void *ptr, t_list **my_syms,
 t_filetype *mach, t_filetype *file)
 {
@@ -82,7 +83,7 @@ void	add_sym_32(struct nlist *symbols_d, t_list **my_syms,
 		tmp.name = ft_strdup_overflow(file, mach->symname, '\n');
 	else
 		tmp.name = NULL;
-	ft_lstadd(my_syms, ft_lstnew((void *)&tmp, sizeof(t_symtab_syms)));
+	ft_lstadd(my_syms, ft_lstnew((void *)&tmp, sizeof(tmp)));
 }
 
 void	add_sym_64(struct nlist_64 *symbols_d64, t_list **my_syms,
@@ -100,6 +101,7 @@ void	add_sym_64(struct nlist_64 *symbols_d64, t_list **my_syms,
 		tmp.name = NULL;
 	ft_lstadd(my_syms, ft_lstnew((void *)&tmp, sizeof(tmp)));
 }
+#endif
 
 char	*ft_strdup_overflow(t_filetype *file, char *src, char end_char)
 {

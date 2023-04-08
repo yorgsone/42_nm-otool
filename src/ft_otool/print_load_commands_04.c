@@ -12,6 +12,7 @@
 
 #include "../../inc/loading_command_name.h"
 
+#if __MACH__
 static void	print_fvmlib_struct(void *ptr, uint8_t big_endian)
 {
 	uint32_t offset;
@@ -32,7 +33,7 @@ void		print_fvmlib_command(void *com, const t_lc *info,
 
 	ptr = com;
 	ft_printf("% 9s %s\n", "cmd", info->cmd_name);
-	ft_printf("% 9s %"PRIu32"\n", "cmdside",\
+	ft_printf("% 9s %"PRIu32"\n", "cmdsize",\
 	swap32(big_endian, ((struct fvmlib_command*)ptr)->cmdsize));
 	print_fvmlib_struct(ptr, big_endian);
 }
@@ -68,7 +69,7 @@ void		print_dysymtab_command(void *com, const t_lc *info,
 
 	ptr = com;
 	ft_printf("% 15s %s\n", "cmd", info->cmd_name);
-	ft_printf("% 15s %"PRIu32"\n", "cmdside",\
+	ft_printf("% 15s %"PRIu32"\n", "cmdsize",\
 	swap32(big_endian, ((struct dysymtab_command*)ptr)->cmdsize));
 	ft_printf("% 15s %"PRIu32"\n", "ilocalsym",\
 	swap32(big_endian, ((struct dysymtab_command*)ptr)->ilocalsym));
@@ -88,3 +89,4 @@ void		print_dysymtab_command(void *com, const t_lc *info,
 	swap32(big_endian, ((struct dysymtab_command*)ptr)->ntoc));
 	print_dysymtab_command_2(ptr, big_endian);
 }
+#endif

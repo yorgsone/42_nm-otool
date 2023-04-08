@@ -12,6 +12,7 @@
 
 #include "../../inc/ft_nm.h"
 
+# if __MACH__
 static int	inner_ar
 	(void *ar_hdr, void *m_hdr, t_filetype *ar, t_filetype *mach)
 {
@@ -19,7 +20,6 @@ static int	inner_ar
 	char	o_name[100];
 
 	ft_memset(o_name, '\0', 100);
-	ar_name_size = 0;
 	if (!ft_strncmp(((t_ar)ar_hdr)->ar_name, AR_EFMT1, ft_strlen(AR_EFMT1)))
 	{
 		ar_name_size = ft_atoi(&((t_ar)ar_hdr)->ar_name[ft_strlen(AR_EFMT1)]);
@@ -31,6 +31,7 @@ static int	inner_ar
 	if (check_oflow(ar, ar_hdr + ar_name_size))
 		return (-1);
 	mach->start = m_hdr;
+	mach->name = o_name;
 	if (is_macho(*(uint32_t *)m_hdr, mach))
 	{
 		mach->size = swap32(mach->big_endian, ((t_mhdr)m_hdr)->sizeofcmds);
@@ -41,13 +42,14 @@ static int	inner_ar
 	}
 	return (1);
 }
+# endif
 
 void		handle_ar(t_filetype *ar)
 {
 	void		*ptr;
 	void		*ar_hdr;
 	void		*m_hdr;
-	uint64_t	ar_size;
+	uint64_t	sz;
 	t_filetype	mach;
 
 	ptr = ar->start + SARMAG;
@@ -61,12 +63,13 @@ void		handle_ar(t_filetype *ar)
 		m_hdr = ar_hdr + sizeof(struct ar_hdr);
 		if (check_oflow(ar, ptr))
 			return ;
-		ar_size = ft_atoi(((struct ar_hdr*)ar_hdr)->ar_size);
-		if (check_oflow(ar, ptr) || ar_size == 0 \
-			|| check_oflow(ar, ptr + ar_size))
+		sz = ft_atoi(((struct ar_hdr*)ar_hdr)->ar_size);
+		if (check_oflow(ar, ptr) || sz == 0 || check_oflow(ar, ptr + sz))
 			return ;
+		# if __MACH__
 		if (inner_ar(ar_hdr, m_hdr, ar, &mach) != 1)
 			return ;
-		ptr += ar_size;
+		# endif
+		ptr += sz;
 	}
 }

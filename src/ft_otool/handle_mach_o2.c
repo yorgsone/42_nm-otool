@@ -12,6 +12,14 @@
 
 #include "../../inc/ft_otool.h"
 
+int	check_error(t_filetype *mach, t_filetype *file)
+{
+	if (find_symtab(mach, mach->start, file) != 1)
+		return (-1);
+	return (1);
+}
+
+#if __MACH__
 int	save_syms_32(void *ptr, t_filetype *mach, t_filetype *file)
 {
 	void			*strtab;
@@ -62,6 +70,7 @@ int	save_syms_64(void *ptr, t_filetype *mach, t_filetype *file)
 	}
 	return (1);
 }
+#endif
 
 int	parse_symtab_command(t_filetype *mach, void *load_command,
 	t_filetype *file)
@@ -82,6 +91,7 @@ int	parse_symtab_command(t_filetype *mach, void *load_command,
 	return (1);
 }
 
+#if __MACH__
 int	find_symtab(t_filetype *mach, void *start, t_filetype *file)
 {
 	void		*load_command;
@@ -108,3 +118,4 @@ int	find_symtab(t_filetype *mach, void *start, t_filetype *file)
 	}
 	return (1);
 }
+#endif

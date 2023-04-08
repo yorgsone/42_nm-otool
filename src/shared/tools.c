@@ -28,14 +28,14 @@ uint64_t	ft_bswap_uint64(uint64_t x)
 
 uint32_t	swap32(uint8_t big_endian, uint32_t x)
 {
-	if (!big_endian)
+	if (big_endian)
 		return (ft_bswap_uint32(x));
 	return (x);
 }
 
 uint64_t	swap64(uint8_t big_endian, uint64_t x)
 {
-	if (!big_endian)
+	if (big_endian)
 		return (ft_bswap_uint64(x));
 	return (x);
 }

@@ -12,6 +12,7 @@
 
 #include "../../inc/loading_command_name.h"
 
+#if __MACH__
 void	print_sub_library_command(void *com,
 const t_lc *info, uint8_t big_endian)
 {
@@ -22,7 +23,7 @@ const t_lc *info, uint8_t big_endian)
 	offset = swap32(big_endian,\
 	((struct sub_library_command*)ptr)->sub_library.offset);
 	ft_printf("% 11s %s\n", "cmd", info->cmd_name);
-	ft_printf("% 11s %"PRIu32"\n", "cmdside",\
+	ft_printf("% 11s %"PRIu32"\n", "cmdsize",\
 	swap32(big_endian, ((struct sub_library_command*)ptr)->cmdsize));
 	ft_printf("% 11s %s (offset %"PRIu32")\n",\
 	"sub_library", ptr + offset, offset);
@@ -35,7 +36,7 @@ const t_lc *info, uint8_t big_endian)
 
 	ptr = com;
 	ft_printf("% 9s %s\n", "cmd", info->cmd_name);
-	ft_printf("% 9s %"PRIu32"\n", "cmdside",\
+	ft_printf("% 9s %"PRIu32"\n", "cmdsize",\
 	swap32(big_endian, ((struct twolevel_hints_command*)ptr)->cmdsize));
 	ft_printf("% 9s %"PRIu32"\n", "offset",\
 	swap32(big_endian, ((struct twolevel_hints_command*)ptr)->offset));
@@ -50,7 +51,7 @@ const t_lc *info, uint8_t big_endian)
 
 	ptr = com;
 	ft_printf("% 9s %s\n", "cmd", info->cmd_name);
-	ft_printf("% 9s %"PRIu32"\n", "cmdside",\
+	ft_printf("% 9s %"PRIu32"\n", "cmdsize",\
 	swap32(big_endian, ((struct prebind_cksum_command*)ptr)->cmdsize));
 	ft_printf("% 9s %"PRIu32"\n", "offset",\
 	swap32(big_endian, ((struct prebind_cksum_command*)ptr)->cksum));
@@ -63,7 +64,7 @@ const t_lc *info, uint8_t big_endian)
 
 	ptr = com;
 	ft_printf("% 9s %s\n", "cmd", info->cmd_name);
-	ft_printf("% 9s %"PRIu32"\n", "cmdside",
+	ft_printf("% 9s %"PRIu32"\n", "cmdsize",
 	swap32(big_endian, ((struct routines_command_64*)ptr)->cmdsize));
 	ft_printf("% 9s 0x%016llx\n", "init_address",\
 	swap64(big_endian, ((struct routines_command_64*)ptr)->init_address));
@@ -96,7 +97,7 @@ const t_lc *info, uint8_t big_endian)
 	while (i < 16)
 		swap32(big_endian, ((struct uuid_command*)ptr)->uuid[i++]);
 	ft_printf("% 9s %s\n", "cmd", info->cmd_name);
-	ft_printf("% 9s %"PRIu32"\n", "cmdside",\
+	ft_printf("% 9s %"PRIu32"\n", "cmdsize",\
 	swap32(big_endian, ((struct uuid_command*)ptr)->cmdsize));
 	ft_printf("% 9s %02X%02X%02X%02X-%02X%02X-%02X%02X", "uuid",\
 	uuid[0], uuid[1], uuid[2], uuid[3], uuid[4], uuid[5], uuid[6], uuid[7]);
@@ -104,3 +105,4 @@ const t_lc *info, uint8_t big_endian)
 	uuid[8], uuid[9], uuid[10], uuid[11],\
 	uuid[12], uuid[13], uuid[14], uuid[15]);
 }
+#endif

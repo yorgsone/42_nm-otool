@@ -25,7 +25,7 @@ static void		lst_swap(t_list *lst1, t_list *lst2)
 	lst2->content_size = content_size_tmp;
 }
 
-void			ft_lstsort(t_list *lst, int (*f)(t_list *lst1, t_list *lst2))
+void			ft_lstsort_nm(t_list *lst, int (*f)(t_list *lst1, t_list *lst2))
 {
 	t_list *to_replace;
 	t_list *el;

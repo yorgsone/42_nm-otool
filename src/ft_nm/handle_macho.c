@@ -12,6 +12,7 @@
 
 #include "../../inc/ft_nm.h"
 
+# if __MACH__
 static void	count_sects(t_filetype *mach, void *start,
 int64_t *nsects, t_filetype *file)
 {
@@ -42,11 +43,11 @@ int64_t *nsects, t_filetype *file)
 	*nsects = count;
 }
 
-static int	parse_sections(t_filetype *mach, void *start, t_sects *sects)
+static int	parse_sections(t_filetype *mach, void *start,
+			t_sects *sects, uint32_t index)
 {
 	void		*lc;
 	uint32_t	ncmds;
-	uint32_t	index;
 	uint32_t	cmd;
 
 	if (mach->is_64)
@@ -69,6 +70,7 @@ static int	parse_sections(t_filetype *mach, void *start, t_sects *sects)
 	}
 	return (1);
 }
+# endif
 
 static void	del(void *content, size_t size)
 {
@@ -94,13 +96,25 @@ t_filetype *mach, t_filetype *file)
 		return (-1);
 	}
 	(argc > 2) ? ft_printf("\n%s:\n", mach->name) : 0;
+	# if __MACH__
 	if (find_symtab(mach, mach->start, &syms, file) != 1)
-		return (error_ret(-2, mach->name, NULL));
+	{
+		ft_lstdel(&syms, del);
+		(syms) ? free(syms) : 0;
+		return (-2);
+	}
+	
 	if (parse_type(&syms, sects) == -1)
+	{
+		ft_lstdel(&syms, del);
+		(syms) ? free(syms) : 0;
 		return (-1);
-	ft_lstsort(syms, sort_mysyms_alpha);
+	}
+	# endif
+	ft_lstsort_nm(syms, sort_mysyms_alpha);
 	print_syms(mach, &syms);
 	ft_lstdel(&syms, del);
+	(syms) ? free(syms) : 0;
 	return (1);
 }
 
@@ -112,20 +126,20 @@ int			handle_mach_o(int argc, t_filetype *mach, t_filetype *file)
 	int		ret;
 
 	if (check_oflow(file, mach->start + sizeof(uint32_t)))
-		return (error_ret(-2, mach->name, NULL));
+		return (error_ret(-2, mach->name, NULL, NULL));
+	# if __MACH__
 	count_sects(mach, mach->start, &nsects, file);
+	#endif
 	if (nsects < 0)
-		return (error_ret(-2, mach->name, NULL));
+		return (error_ret(-2, mach->name, NULL, NULL));
 	if (!(sects = (t_sects *)malloc(sizeof(t_sects) * nsects)))
 		return (-1);
-	if (parse_sections(mach, mach->start, sects) != 1)
-		return (error_ret(-2, mach->name, NULL));
-	ret = inner_mach_o(sects, argc, mach, file);
-	if (ret == -2)
-		return (error_ret(-2, mach->name, NULL));
-	else if (ret == -1)
-		return (-1);
-	if (sects)
-		free(sects);
+		# if __MACH__
+	if (parse_sections(mach, mach->start, sects, 0) != 1)
+		return (error_ret(-2, mach->name, NULL, sects));
+		#endif
+	if ((ret = inner_mach_o(sects, argc, mach, file)) == -2)
+		return (error_ret(-2, mach->name, NULL, sects));
+	(sects) ? free(sects) : 0;
 	return (1);
 }

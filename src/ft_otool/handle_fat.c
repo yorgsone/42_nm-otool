@@ -12,6 +12,7 @@
 
 #include "../../inc/ft_otool.h"
 
+#if __MACH__
 static int	print_fat_header(t_filetype *fat, struct fat_arch *archs,
 	size_t narchs)
 {
@@ -98,6 +99,7 @@ const NXArchInfo *best_arch)
 	init_struct(&mach);
 	fat_arch = fat->start + sizeof(struct fat_header);
 	mach.name = fat->name;
+	mach.flags = fat->flags;
 	m_hdr = fat->start + swap32(fat->big_endian, ((t_fa*)fat_arch)->offset);
 	i = 0;
 	while (i < nfat_arch)
@@ -123,20 +125,21 @@ int			handle_fat(t_filetype *fat, uint8_t fs)
 	fat->flags = fs;
 	n_arch = swap32(fat->big_endian, ((t_fh*)fat->start)->nfat_arch);
 	if (n_arch <= 0)
-		return (error_ret(-3, fat->name, "not archs found"));
+		return (error_ret(-3, fat->name, "not archs found", NULL));
 	if (check_oflow(fat, fat->start + sizeof(struct fat_arch)))
-		return (error_ret(-2, fat->name, NULL));
+		return (error_ret(-2, fat->name, NULL, NULL));
 	if (!(fat_archs = get_archs(fat_archs, fat, n_arch)))
-		return (error_ret(-3, fat->name, "arch error"));
+		return (error_ret(-3, fat->name, "arch error", NULL));
 	local_arch = get_local_arch(fat_archs, n_arch, NULL, NULL);
 	if (chk_flag(FLAG_F, fs))
 		if (print_fat_header(fat, fat_archs, n_arch) != 1)
-			return (error_ret(-2, fat->name, NULL));
+			return (error_ret(-2, fat->name, NULL, NULL));
 	if (chk_flag(FLAG_L, fs) || chk_flag(FLAG_H, fs) || chk_flag(FLAG_T, fs))
 		if (print_macho_fat(fat, n_arch, local_arch) != 1)
-			return (error_ret(-2, fat->name, NULL));
+			return (error_ret(-2, fat->name, NULL, NULL));
 	free_nxinfo(local_arch, NULL);
 	if (fat_archs)
 		free(fat_archs);
 	return (1);
 }
+#endif

@@ -12,23 +12,85 @@
 
 #include "../../inc/ft_otool.h"
 
-int			check_error(t_filetype *mach, t_filetype *file)
+#if __MACH__
+static int64_t	get_value(void *sect, t_filetype *mach, char c)
 {
-	if (find_symtab(mach, mach->start, file) != 1)
+	if (mach->is_64)
+	{
+		if (c == 'a')
+			return (swap64(mach->big_endian, ((t_s64*)sect)->addr));
+		else if (c == 's')
+			return (swap64(mach->big_endian, ((t_s64*)sect)->size));
+		else if (c == 'o')
+		{
+			return (swap64(mach->big_endian,\
+				(int64_t)((t_s64*)sect)->offset));
+		}
+		return (0);
+	}
+	if (c == 'a')
+		return (swap32(mach->big_endian, (int64_t)((t_s*)sect)->addr));
+	else if (c == 's')
+		return (swap32(mach->big_endian, (int64_t)((t_s*)sect)->size));
+	else if (c == 'o')
+		return (swap32(mach->big_endian, (int64_t)((t_s*)sect)->offset));
+	return (0);
+}
+
+static int		inner_t_option(t_filetype *mach, void *ptr, void *start)
+{
+	void		*sect;
+	uint32_t	nsects;
+	uint32_t	segment_size;
+	uint32_t	section_size;
+
+	segment_size = (mach->is_64) ? sizeof(t_sc64) : sizeof(t_sc);
+	section_size = (mach->is_64) ? sizeof(t_s64) : sizeof(t_s);
+	nsects = (mach->is_64) ? swap32(mach->big_endian,\
+	((t_sc64*)ptr)->nsects) : swap32(mach->big_endian, ((t_sc*)ptr)->nsects);
+	sect = ptr + segment_size;
+	if (check_oflow(mach, sect))
 		return (-1);
+	if (check_oflow(mach, sect + section_size))
+		return (-1);
+	while (nsects--)
+	{
+		if (is_text_section(mach, sect))
+		{
+			ft_printf("(__TEXT,__text) section\n");
+			ft_hexdump(start + get_value(sect, mach, 'o'),\
+			get_value(sect, mach, 's'), get_value(sect, mach, 'a'), mach);
+		}
+		sect += section_size;
+	}
 	return (1);
 }
 
-void		print_load_command(void *lco, t_filetype *mach)
+void			t_option(void *start, t_filetype *mach,
+void *segment_command, uint32_t ncmds)
 {
-	const t_lc *lc;
+	void		*ptr;
+	uint32_t	i;
+	uint32_t	cmd;
 
-	lc = lc_info_from_id(swap32(mach->big_endian, ((t_lco *)lco)->cmd));
-	if (lc->print_seg)
-		lc->print_seg(lco, lc, mach->big_endian);
+	ptr = segment_command;
+	cmd = swap32(mach->big_endian, ((struct load_command *)ptr)->cmd);
+	i = 0;
+	while (i < ncmds)
+	{
+		if (cmd == LC_SEGMENT_64 || cmd == LC_SEGMENT)
+			inner_t_option(mach, ptr, start);
+		ptr += swap32(mach->big_endian, ((struct load_command *)ptr)->cmdsize);
+		cmd = swap32(mach->big_endian, ((struct load_command *)ptr)->cmd);
+		i++;
+	}
+	if (!chk_flag(mach->flags, FLAG_L) &&
+		chk_flag(mach->flags, FLAG_H))
+		print_macho_header(mach, mach->start);
 }
 
-int			print_long_mach_o(t_filetype *mach, uint8_t flags, t_filetype *file)
+int				print_long_mach_o(t_filetype *mach, uint8_t flags,
+t_filetype *file)
 {
 	void		*lco;
 	const t_lc	*lc;
@@ -56,18 +118,20 @@ int			print_long_mach_o(t_filetype *mach, uint8_t flags, t_filetype *file)
 	}
 	return (1);
 }
+#endif
 
-int			handle_mach_o(t_filetype *mach, uint8_t flags, t_filetype *file)
+int				handle_mach_o(t_filetype *mach, uint8_t flags, t_filetype *file)
 {
+	mach->flags = flags;
 	if (check_oflow(file, mach->start + sizeof(uint32_t)))
-		return (error_ret(-2, mach->name, NULL));
+		return (error_ret(-2, mach->name, NULL, NULL));
 	if (check_error(mach, file) == -1)
-		return (error_ret(-2, mach->name, NULL));
+		return (error_ret(-2, mach->name, NULL, NULL));
 	if (chk_flag(FLAG_L, flags) || chk_flag(FLAG_T, flags))
 	{
 		ft_printf("%s:\n", mach->name);
 		if (print_long_mach_o(mach, flags, mach) != 1)
-			error_ret(-2, mach->name, NULL);
+			error_ret(-2, mach->name, NULL, NULL);
 	}
 	else if (chk_flag(FLAG_H, flags))
 		print_macho_header(mach, mach->start);

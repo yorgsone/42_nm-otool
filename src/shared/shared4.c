@@ -12,11 +12,11 @@
 
 #include "../../inc/shared.h"
 
-static int		check_arch_errors(int cputype, int cpusubtype,
-uint32_t offset, uint32_t align)
+#if __MACH__
+static int		ar_ok(struct fat_arch *arch)
 {
-	if ((cputype == 0 && cpusubtype == 0) \
-		|| offset == 0 || offset % ft_pow2(2, align) != 0)
+	if ((arch->cputype == 0 && arch->cpusubtype == 0) \
+		|| arch->offset == 0 || arch->offset % ft_pow2(2, arch->align) != 0)
 		return (1);
 	return (0);
 }
@@ -37,14 +37,14 @@ size_t nfat_arch)
 		archs[i].cputype = swap32(fat->big_endian, ((t_fa*)f_arch)->cputype);
 		archs[i].cpusubtype = swap32(fat->big_endian,\
 		((t_fa*)f_arch)->cpusubtype);
-		info = NXGetArchInfoFromCpuType(archs[i].cputype, archs[i].cpusubtype);
 		archs[i].offset = swap32(fat->big_endian, ((t_fa*)f_arch)->offset);
 		archs[i].size = swap32(fat->big_endian, ((t_fa*)f_arch)->size);
 		archs[i].align = swap32(fat->big_endian, ((t_fa*)f_arch)->align);
-		if (check_oflow(fat, fat->start + archs[i].offset) ||\
-		check_arch_errors(archs[i].cputype, archs[i].cpusubtype,\
-		archs[i].offset, archs[i].align))
+		if (check_oflow(fat, fat->start + archs[i].offset) || ar_ok(&archs[i]))
+		{
+			free(archs);
 			return (NULL);
+		}
 		f_arch = f_arch + sizeof(t_fa);
 		i++;
 	}
@@ -55,25 +55,25 @@ int				is_macho(uint32_t magic, t_filetype *file)
 {
 	if (magic == MH_MAGIC_64)
 	{
-		file->big_endian = TRUE;
+		file->big_endian = FALSE;
 		file->is_64 = TRUE;
 		return (1);
 	}
 	else if (magic == MH_CIGAM_64)
 	{
-		file->big_endian = FALSE;
+		file->big_endian = TRUE;
 		file->is_64 = TRUE;
 		return (1);
 	}
 	else if (magic == MH_MAGIC)
 	{
-		file->big_endian = TRUE;
+		file->big_endian = FALSE;
 		file->is_64 = FALSE;
 		return (1);
 	}
 	else if (magic == MH_CIGAM)
 	{
-		file->big_endian = FALSE;
+		file->big_endian = TRUE;
 		file->is_64 = FALSE;
 		return (1);
 	}
@@ -108,10 +108,18 @@ int				is_fat(uint32_t magic, t_filetype *file)
 	}
 	return (0);
 }
+#endif
 
 int				is_archive(uint32_t magic, t_filetype *file)
 {
-	if (magic == OARMAG1)
+	if (ft_strncmp(file->start, ARMAG, SARMAG) == 0)
+	{
+		file->big_endian = TRUE;
+		file->is_64 = TRUE;
+		return (1);
+	}
+	#if __MACH__
+	else if (magic == OARMAG1)
 	{
 		file->big_endian = TRUE;
 		file->is_64 = TRUE;
@@ -123,11 +131,13 @@ int				is_archive(uint32_t magic, t_filetype *file)
 		file->is_64 = TRUE;
 		return (1);
 	}
-	else if (ft_strncmp(file->start, ARMAG, SARMAG) == 0)
-	{
-		file->big_endian = TRUE;
-		file->is_64 = TRUE;
-		return (1);
-	}
+	#endif
 	return (0);
 }
+
+#if __linux__
+int				is_elf(uint32_t magic, t_filetype *file)
+{
+	return (ft_memcmp(file->start,ELFMAG, SELFMAG) == 0);
+}
+#endif

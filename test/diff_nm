@@ -1,0 +1,3 @@
+nm $1 > orig 
+ ./ft_nm $1 > check
+diff --color  orig check

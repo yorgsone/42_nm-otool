@@ -12,6 +12,7 @@
 
 #include "../../inc/loading_command_name.h"
 
+#if __MACH__
 static void	print_section_2(void *ptr, uint8_t big_endian)
 {
 	ft_printf("% 9s %" PRIu32 "\n", "reloff",\
@@ -69,7 +70,7 @@ void		print_sc(void *com, const t_lc *info, uint8_t big_endian)
 	nsects = 0;
 	ptr = com;
 	ft_printf("% 9s %s\n", "cmd", info->cmd_name);
-	ft_printf("% 9s %"PRIu32"\n", "cmdside",\
+	ft_printf("% 9s %"PRIu32"\n", "cmdsize",\
 	swap32(big_endian, ((struct segment_command*)ptr)->cmdsize));
 	ft_printf("% 9s %s\n", "segname", ((struct segment_command*)ptr)->segname);
 	ft_printf("% 9s 0x%08x\n", "vmaddr",\
@@ -84,3 +85,4 @@ void		print_sc(void *com, const t_lc *info, uint8_t big_endian)
 	ptr = com + sizeof(struct segment_command);
 	print_section(ptr, nsects, big_endian);
 }
+#endif

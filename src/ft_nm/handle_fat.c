@@ -12,6 +12,7 @@
 
 #include "../../inc/ft_nm.h"
 
+#if __MACH__
 static void	print_proper_arch(const NXArchInfo *l_arch, cpu_type_t cpu_type,
 cpu_subtype_t cpu_subtype, t_filetype *file)
 {
@@ -94,17 +95,21 @@ int			handle_fat(t_filetype *file)
 	nfat_arch = swap32(file->big_endian, \
 	((struct fat_header*)file->start)->nfat_arch);
 	if (nfat_arch < 0)
-		return (error_ret(-3, file->name, ""));
+		return (error_ret(-3, file->name, "", NULL));
 	if (check_oflow(file, file->start + sizeof(struct fat_arch)))
-		return (error_ret(-2, file->name, NULL));
+		return (error_ret(-2, file->name, NULL, NULL));
 	fat_archs = get_archs(fat_archs, file, nfat_arch);
 	if (!fat_archs)
-		return (error_ret(-3, file->name, "arch error"));
+		return (error_ret(-3, file->name, "arch error", NULL));
 	l_arch = get_local_arch(fat_archs, nfat_arch, NULL, NULL);
 	if (iter_macho_fat(nfat_arch, file, l_arch) != 1)
-		return (error_ret(-2, file->name, NULL));
-	free_nxinfo(l_arch, NULL);
+	{
+		if (fat_archs)
+			free(fat_archs);
+		return (error_ret(-2, file->name, NULL, NULL));
+	}
 	if (fat_archs)
 		free(fat_archs);
 	return (1);
 }
+# endif

@@ -36,4 +36,6 @@ int		save_syms_64(void *ptr, t_filetype *mach, t_filetype *file);
 void	print_load_command(void *lco, t_filetype *mach);
 void	init_struct(t_filetype *file);
 void	handle_ar(t_filetype *ar, uint8_t flags);
+void	t_option(void *start, t_filetype *mach,
+	void *segment_command, uint32_t ncmds);
 #endif

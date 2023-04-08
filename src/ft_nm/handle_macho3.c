@@ -12,6 +12,7 @@
 
 #include "../../inc/ft_nm.h"
 
+# if __MACH__
 uint32_t	store_sectname(t_filetype *mach, void *section,
 t_sects *sects, uint32_t index)
 {
@@ -27,13 +28,14 @@ t_sects *sects, uint32_t index)
 		seg_size = (mach->is_64) ? sizeof(t_sc64) : sizeof(t_sc);
 		sect_size = (mach->is_64) ? sizeof(t_s64) : sizeof(t_s);
 		sect = sect + seg_size;
-		if (check_oflow(mach, sect) || check_oflow(mach, sect + sect_size))
+		if (check_oflow(mach, sect + sect_size) == 1)
 			return (-1);
 		while (nsect_count--)
 		{
-			(mach->is_64) ? \
-			ft_strcpy(sects[index].sect_name, ((t_s64*)sect)->sectname) :\
-			ft_strcpy(sects[index].sect_name, ((t_s*)sect)->sectname);
+			if (check_oflow(mach, sect) == 1)
+				return (-1);
+			sects[index].sect_name = (mach->is_64) ? \
+			((t_s64*)sect)->sectname : ((t_s*)sect)->sectname;
 			sect = sect + sect_size;
 			index++;
 		}
@@ -104,3 +106,4 @@ char		get_sect_type(uint8_t n_type, t_sects *sect)
 		ret = ft_tolower(ret);
 	return (ret);
 }
+# endif

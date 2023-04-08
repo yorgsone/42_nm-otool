@@ -12,10 +12,16 @@
 
 #include "../../inc/ft_otool.h"
 
-extern int	g_optind;
-extern int	g_optcol;
-extern int	g_optopt;
-extern int	g_opterr;
+# if __MACH__
+void			print_load_command(void *lco, t_filetype *mach)
+{
+	const t_lc *lc;
+
+	lc = lc_info_from_id(swap32(mach->big_endian, ((t_lco *)lco)->cmd));
+	if (lc->print_seg)
+		lc->print_seg(lco, lc, mach->big_endian);
+}
+# endif 
 
 uint8_t			parse_opt(int ar, char **ag, uint8_t flags)
 {
@@ -87,6 +93,11 @@ static int		ft_otool(uint8_t flags, char *name)
 
 int				main(int ar, char **ag)
 {
+
+extern int	g_optind;
+extern int	g_optcol;
+extern int	g_optopt;
+extern int	g_opterr;
 	uint8_t	flags;
 
 	if (ar >= 3)

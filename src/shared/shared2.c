@@ -25,33 +25,35 @@ void				init_struct(t_filetype *file)
 }
 
 int					error_ret(int err_code, const char *err_file,
-const char *err_msg)
+const char *err_msg, t_sects *to_free)
 {
+	(to_free) ? free(to_free) : 0;
 	if (err_code == -2)
 	{
-		ft_printf("error: %s truncated or malformed file\n\n", err_file);
+		ft_printf("error: %s truncated or malformed file\n", err_file);
 		return (err_code);
 	}
 	else if (err_code == -3)
 	{
 		if (!err_msg)
-			ft_printf("error: %s %s\n\n", err_file, "Unknown error");
+			ft_printf("error: %s %s\n", err_file, "Unknown error");
 		else
-			ft_printf("error: %s %s\n\n", err_file, err_msg);
+			ft_printf("error: %s %s\n", err_file, err_msg);
 		return (err_code);
 	}
 	else
 	{
-		ft_printf("error: %s malloc error\n\n", err_file);
+		ft_printf("error: %s malloc error\n", err_file);
 		return (-1);
 	}
 }
 
 void				error(char *at, char *error)
 {
-	ft_printf("error: %s: %s\n\n", at, error);
+	ft_printf("error: %s: %s\n", at, error);
 }
 
+#if __MACH__
 void				free_nxinfo(const NXArchInfo *o1, const NXArchInfo *o2)
 {
 	if (o1)
@@ -88,3 +90,4 @@ uint32_t nfat_arch, const NXArchInfo *local_arch, const NXArchInfo *from_name)
 	free_nxinfo(from_name, local_arch);
 	return (NULL);
 }
+#endif
