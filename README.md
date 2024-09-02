@@ -17,7 +17,7 @@ If run without args is using a.out if it exists
 If it is compiled in a Linux environent, nm will be parsing ELF format instead of Mach-o.
 
 
-#ft_otool
+# ft_otool
 The otool command displays specified parts of object files or libraries
 ```
 ./ft_otool -<flags> <args> 
