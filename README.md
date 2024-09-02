@@ -1,5 +1,6 @@
 # nm-otool
-Rewritting of nm and otool commands as found on MAC OS
+Rewritting of nm and otool commands as found on MacOS.
+* If compiled in a Linux environent it nm will be parsing ELF format instead of Mach-o.
 
 ## Compilation
 run
