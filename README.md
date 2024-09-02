@@ -1,6 +1,5 @@
 # nm-otool
 Rewritting of nm and otool commands as found on MacOS.
-! If compiled in a Linux environent it nm will be parsing ELF format instead of Mach-o.
 
 ## Compilation
 run
@@ -10,11 +9,13 @@ make
 and both nm and otool will be compiled
 
 ## ft_nm
-displays name list (symbol table) of an executable, library, object file and fat file.
+Displays name list (symbol table) of an executable, library, object file and fat file.
 If run without args is using a.out if it exists
 ```
 ./ft_nm <args>
 ```
+If it is compiled in a Linux environent, nm will be parsing ELF format instead of Mach-o.
+
 
 #ft_otool
 The otool command displays specified parts of object files or libraries
